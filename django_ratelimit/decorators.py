@@ -13,7 +13,8 @@ __all__ = ['ratelimit']
 def ratelimit(group=None, key=None, rate=None, method=ALL, block=False):
     def decorator(fn):
         @wraps(fn)
-        def _wrapped(request, *args, **kw):
+        def _wrapped(view, *args, **kw):
+            request = view.request
             old_limited = getattr(request, 'limited', False)
             ratelimited = is_ratelimited(request=request, group=group, fn=fn,
                                          key=key, rate=rate, method=method,
@@ -21,7 +22,7 @@ def ratelimit(group=None, key=None, rate=None, method=ALL, block=False):
             request.limited = ratelimited or old_limited
             if ratelimited and block:
                 raise Ratelimited()
-            return fn(request, *args, **kw)
+            return fn(view, *args, **kw)
         return _wrapped
     return decorator
 
